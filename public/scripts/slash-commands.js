@@ -2083,7 +2083,34 @@ async function buttonsCallback(args, text) {
             let popup;
 
             const buttonContainer = document.createElement('div');
-            buttonContainer.classList.add('flex-container', 'flexFlowColumn', 'wide100p', 'm-t-1');
+            buttonContainer.classList.add('flex-container', 'flexFlowColumn', 'wide100p');
+
+            const scrollableContainer = document.createElement('div');
+            scrollableContainer.style.maxHeight = '50vh'; // Use viewport height instead of fixed pixels
+            scrollableContainer.style.overflowY = 'auto';
+            scrollableContainer.style.WebkitOverflowScrolling = 'touch'; // Enable momentum scrolling on iOS
+            scrollableContainer.classList.add('m-t-1', 'scrollable-buttons');
+
+            // Add custom CSS for better mobile scrolling
+            const style = document.createElement('style');
+            style.textContent = `
+                .scrollable-buttons {
+                    -webkit-overflow-scrolling: touch;
+                    overflow-y: auto;
+                    flex-shrink: 1;
+                    min-height: 0;
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+                }
+                .scrollable-buttons::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .scrollable-buttons::-webkit-scrollbar-thumb {
+                    background-color: rgba(255, 255, 255, 0.3);
+                    border-radius: 3px;
+                }
+            `;
+            document.head.appendChild(style);
 
             for (const [result, button] of resultToButtonMap) {
                 const buttonElement = document.createElement('div');
@@ -2096,9 +2123,16 @@ async function buttonsCallback(args, text) {
                 buttonContainer.appendChild(buttonElement);
             }
 
+            scrollableContainer.appendChild(buttonContainer);
+
             const popupContainer = document.createElement('div');
             popupContainer.innerHTML = safeValue;
-            popupContainer.appendChild(buttonContainer);
+            popupContainer.appendChild(scrollableContainer);
+
+            // Ensure the popup uses flex layout
+            popupContainer.style.display = 'flex';
+            popupContainer.style.flexDirection = 'column';
+            popupContainer.style.maxHeight = '80vh'; // Limit the overall height of the popup
 
             popup = new Popup(popupContainer, POPUP_TYPE.TEXT, '', { okButton: 'Cancel', allowVerticalScrolling: true });
             popup.show()
